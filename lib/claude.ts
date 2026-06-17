@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { CLAUDE_MODEL, CLAUDE_MAX_TOKENS, MAX_BRIEFING_CONTEXT_CHARS } from '@/constants'
-import type { BriefingData } from '@/types'
+import type { BriefingData, ShiftWithTasks } from '@/types'
 import { formatShiftForBriefing } from '@/utils/format-shift'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
