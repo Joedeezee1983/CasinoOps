@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  TECH
+  SUPERVISOR
+  ADMIN
+}
+
+enum ShiftStatus {
+  ACTIVE
+  COMPLETED
+}
+
+enum IssueType {
+  DOWN_MACHINE
+  CPU_WORK
+  GMU_WORK
+  SDS_WORK
+  LOCK_CHANGE
+  BUTTON_PANEL
+  OTHER
+}
+
+enum TaskStatus {
+  RESOLVED
+  PENDING
+  PARTS_ORDERED
+}
+
+enum MachineStatus {
+  OPERATIONAL
+  DOWN
+  PENDING_PARTS
+}
+
+enum PartsOrderStatus {
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  hashedPassword String
+  role           UserRole @default(TECH)
+  createdAt      DateTime @default(now())
+
+  shifts Shift[]
+}
+
+model Shift {
+  id        String      @id @default(cuid())
+  techId    String
+  startTime DateTime    @default(now())
+  endTime   DateTime?
+  status    ShiftStatus @default(ACTIVE)
+  createdAt DateTime    @default(now())
+
+  tech   User          @relation(fields: [techId], references: [id])
+  tasks  Task[]
+  report ShiftReport?
+}
+
+model Task {
+  id            String     @id @default(cuid())
+  shiftId       String
+  machineNumber String
+  location      String
+  issueType     IssueType
+  actionTaken   String
+  status        TaskStatus @default(PENDING)
+  createdAt     DateTime   @default(now())
+
+  shift      Shift        @relation(fields: [shiftId], references: [id])
+  partsOrders PartsOrder[]
+}
+
+model ShiftReport {
+  id        String   @id @default(cuid())
+  shiftId   String   @unique
+  aiSummary String
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+
+  shift Shift @relation(fields: [shiftId], references: [id])
+}
+
+model Machine {
+  id            String        @id @default(cuid())
+  machineNumber String        @unique
+  location      String
+  type          String
+  status        MachineStatus @default(OPERATIONAL)
+  createdAt     DateTime      @default(now())
+
+  partsOrders PartsOrder[]
+}
+
+model PartsOrder {
+  id              String           @id @default(cuid())
+  machineId       String
+  taskId          String
+  partDescription String
+  status          PartsOrderStatus @default(ORDERED)
+  createdAt       DateTime         @default(now())
+
+  machine Machine @relation(fields: [machineId], references: [id])
+  task    Task    @relation(fields: [taskId], references: [id])
+}

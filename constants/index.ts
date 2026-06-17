@@ -1,0 +1,40 @@
+import type { IssueType, TaskStatus, MachineStatus } from '@prisma/client'
+
+export const ISSUE_TYPE_LABELS: Record<IssueType, string> = {
+  DOWN_MACHINE: 'Down Machine',
+  CPU_WORK: 'CPU Work',
+  GMU_WORK: 'GMU Work',
+  SDS_WORK: 'SDS Work',
+  LOCK_CHANGE: 'Lock Change',
+  BUTTON_PANEL: 'Button Panel',
+  OTHER: 'Other',
+}
+
+export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
+  RESOLVED: 'Resolved',
+  PENDING: 'Pending',
+  PARTS_ORDERED: 'Parts Ordered',
+}
+
+export const MACHINE_STATUS_LABELS: Record<MachineStatus, string> = {
+  OPERATIONAL: 'Operational',
+  DOWN: 'Down',
+  PENDING_PARTS: 'Pending Parts',
+}
+
+export const TASK_STATUS_COLORS: Record<TaskStatus, string> = {
+  RESOLVED: 'bg-green-500 text-black',
+  PENDING: 'bg-amber-500 text-black',
+  PARTS_ORDERED: 'bg-blue-500 text-white',
+}
+
+export const MACHINE_STATUS_COLORS: Record<MachineStatus, string> = {
+  OPERATIONAL: 'bg-green-900 text-green-300',
+  DOWN: 'bg-red-900 text-red-300',
+  PENDING_PARTS: 'bg-yellow-900 text-yellow-300',
+}
+
+export const MAX_BRIEFING_CONTEXT_CHARS = 40000
+export const CLAUDE_MODEL = 'claude-sonnet-4-6'
+export const CLAUDE_MAX_TOKENS = 1024
+export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8
