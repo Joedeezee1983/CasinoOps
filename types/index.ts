@@ -67,6 +67,13 @@ export interface CreateMachineInput {
   type: string
 }
 
+export interface DownMachineEntry {
+  machineNumber: string
+  location: string
+  techName: string
+  createdAt: Date
+}
+
 export interface BriefingData {
   activeShifts: ShiftWithTasks[]
   recentReports: ShiftReportSummary[]

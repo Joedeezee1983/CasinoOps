@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import type { CreateTaskInput, TaskSummary } from '@/types'
+import type { CreateTaskInput, TaskSummary, DownMachineEntry } from '@/types'
 
 /**
  * Logs a new task under the given shift.
@@ -39,6 +39,38 @@ export async function createTask(
       createdAt: true,
     },
   })
+}
+
+/**
+ * Returns all unresolved DOWN_MACHINE tasks tied to active shifts, sorted oldest first.
+ * Used by the supervisor dashboard to show machines currently down on the floor.
+ */
+export async function getActiveMachinesDown(): Promise<DownMachineEntry[]> {
+  const tasks = await db.task.findMany({
+    where: {
+      issueType: 'DOWN_MACHINE',
+      status: { not: 'RESOLVED' },
+      shift: { status: 'ACTIVE' },
+    },
+    select: {
+      machineNumber: true,
+      location: true,
+      createdAt: true,
+      shift: {
+        select: {
+          tech: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+  })
+
+  return tasks.map((t) => ({
+    machineNumber: t.machineNumber,
+    location: t.location,
+    techName: t.shift.tech.name,
+    createdAt: t.createdAt,
+  }))
 }
 
 /**
