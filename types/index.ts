@@ -79,6 +79,22 @@ export interface BriefingData {
   recentReports: ShiftReportSummary[]
 }
 
+export interface UserSummary {
+  id: string
+  name: string
+  email: string
+  role: UserRole
+  isActive: boolean
+  createdAt: Date
+}
+
+export interface CreateUserInput {
+  name: string
+  email: string
+  password: string
+  role: UserRole
+}
+
 export interface ApiResponse<T> {
   data: T
 }

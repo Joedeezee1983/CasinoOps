@@ -14,6 +14,7 @@ export interface NavBarProps {
 
 export default function NavBar({ user }: NavBarProps) {
   const isSupervisor = ['SUPERVISOR', 'ADMIN'].includes(user.role)
+  const isAdmin = user.role === 'ADMIN'
 
   return (
     <nav className="bg-casino-card border-b border-casino-border px-4 py-3">
@@ -38,6 +39,11 @@ export default function NavBar({ user }: NavBarProps) {
             {isSupervisor && (
               <Link href="/supervisor" className="text-casino-muted hover:text-casino-text transition-colors">
                 Supervisor
+              </Link>
+            )}
+            {isAdmin && (
+              <Link href="/admin/users" className="text-casino-muted hover:text-casino-text transition-colors">
+                Users
               </Link>
             )}
           </div>

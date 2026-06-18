@@ -52,6 +52,7 @@ model User {
   email          String   @unique
   hashedPassword String
   role           UserRole @default(TECH)
+  isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
 
   shifts Shift[]
