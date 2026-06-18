@@ -50,7 +50,7 @@ export default function TaskCard({ task, onStatusChange }: TaskCardProps) {
             value={task.status}
             onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
             disabled={isUpdating}
-            className={`text-xs font-medium px-2 py-1 rounded border-0 cursor-pointer disabled:opacity-50 ${TASK_STATUS_COLORS[task.status]}`}
+            className={`text-xs font-medium px-3 py-2 rounded border-0 cursor-pointer disabled:opacity-50 min-h-[44px] ${TASK_STATUS_COLORS[task.status]}`}
           >
             {(Object.entries(TASK_STATUS_LABELS) as [TaskStatus, string][]).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>

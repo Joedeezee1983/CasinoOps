@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { endShift } from '@/lib/shift-service'
 import { generateShiftSummary } from '@/lib/claude'
 import { saveShiftReport } from '@/lib/briefing-service'
+import { sendShiftSummaryEmail } from '@/lib/email-service'
 
 export async function POST(): Promise<NextResponse> {
   try {
@@ -20,6 +21,7 @@ export async function POST(): Promise<NextResponse> {
       const aiSummary = await generateShiftSummary(completedShift)
       const report = await saveShiftReport(completedShift.id, aiSummary)
       reportId = report.id
+      await sendShiftSummaryEmail(completedShift, aiSummary)
     } catch (briefingError) {
       console.error(
         '[shifts/end/POST] Briefing generation failed:',

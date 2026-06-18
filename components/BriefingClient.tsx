@@ -59,7 +59,7 @@ export default function BriefingClient() {
 
   return (
     <div className="bg-casino-card border border-casino-border rounded-xl overflow-hidden">
-      <div className="px-6 py-4 border-b border-casino-border flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-casino-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <p className="text-casino-text font-semibold">{report.shift.tech.name}</p>
           <p className="text-casino-muted text-xs mt-0.5">
@@ -67,7 +67,7 @@ export default function BriefingClient() {
             {report.shift.endTime && ` → ${formatDate(report.shift.endTime)}`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-casino-accent text-xs font-medium">AI Summary</span>
           <span className="text-casino-muted text-xs">· Claude</span>
         </div>

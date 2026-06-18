@@ -38,10 +38,10 @@ interface ShiftPanelProps {
 function ShiftPanel({ shift }: ShiftPanelProps) {
   return (
     <div className="bg-casino-card border border-casino-border rounded-xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-casino-border flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-casino-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0" />
             <span className="font-semibold text-casino-text">{shift.tech.name}</span>
             <span className="text-xs bg-casino-border text-casino-muted px-2 py-0.5 rounded">
               {shift.tech.role}
@@ -51,7 +51,7 @@ function ShiftPanel({ shift }: ShiftPanelProps) {
             Started {formatDate(shift.startTime)} · {elapsedTime(shift.startTime)} elapsed
           </p>
         </div>
-        <div className="text-right">
+        <div className="sm:text-right">
           <p className="text-casino-text text-sm font-semibold">{shift.tasks.length}</p>
           <p className="text-casino-muted text-xs">tasks</p>
         </div>
@@ -61,14 +61,16 @@ function ShiftPanel({ shift }: ShiftPanelProps) {
           <p className="px-5 py-4 text-casino-muted text-sm">No tasks logged.</p>
         ) : (
           shift.tasks.map((task) => (
-            <div key={task.id} className="px-5 py-3 flex items-center justify-between gap-4">
-              <div>
-                <span className="text-casino-text text-sm font-medium">#{task.machineNumber}</span>
-                <span className="text-casino-muted text-xs ml-2">{task.location}</span>
-                <span className="text-xs ml-2 text-casino-muted">{ISSUE_TYPE_LABELS[task.issueType]}</span>
-                <p className="text-casino-text text-xs mt-0.5">{task.actionTaken}</p>
+            <div key={task.id} className="px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span className="text-casino-text text-sm font-medium">#{task.machineNumber}</span>
+                  <span className="text-casino-muted text-xs">{task.location}</span>
+                  <span className="text-xs text-casino-muted">{ISSUE_TYPE_LABELS[task.issueType]}</span>
+                </div>
+                <p className="text-casino-text text-xs mt-0.5 break-words">{task.actionTaken}</p>
               </div>
-              <span className={`text-xs font-medium px-2 py-1 rounded whitespace-nowrap ${TASK_STATUS_COLORS[task.status as TaskStatus]}`}>
+              <span className={`self-start sm:self-auto text-xs font-medium px-2 py-1 rounded whitespace-nowrap ${TASK_STATUS_COLORS[task.status as TaskStatus]}`}>
                 {TASK_STATUS_LABELS[task.status as TaskStatus]}
               </span>
             </div>

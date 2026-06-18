@@ -14,7 +14,7 @@ export interface ShiftStatusProps {
 export default function ShiftStatus({ shift, onStart, onEnd, isStarting, isEnding }: ShiftStatusProps) {
   if (!shift) {
     return (
-      <div className="bg-casino-card border border-casino-border rounded-xl p-6 flex items-center justify-between">
+      <div className="bg-casino-card border border-casino-border rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <p className="text-casino-text font-semibold">No Active Shift</p>
           <p className="text-casino-muted text-sm mt-1">Start a shift to begin logging tasks.</p>
@@ -22,7 +22,7 @@ export default function ShiftStatus({ shift, onStart, onEnd, isStarting, isEndin
         <button
           onClick={onStart}
           disabled={isStarting}
-          className="bg-casino-accent hover:bg-casino-accent-hover disabled:opacity-50 text-black font-semibold rounded-lg px-5 py-2 text-sm transition-colors"
+          className="w-full sm:w-auto min-h-[44px] bg-casino-accent hover:bg-casino-accent-hover disabled:opacity-50 text-black font-semibold rounded-lg px-5 py-2 text-sm transition-colors"
         >
           {isStarting ? 'Starting...' : 'Start Shift'}
         </button>
@@ -32,7 +32,7 @@ export default function ShiftStatus({ shift, onStart, onEnd, isStarting, isEndin
 
   return (
     <div className="bg-casino-card border border-green-800 rounded-xl p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -46,7 +46,7 @@ export default function ShiftStatus({ shift, onStart, onEnd, isStarting, isEndin
         <button
           onClick={onEnd}
           disabled={isEnding}
-          className="bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-lg px-5 py-2 text-sm transition-colors"
+          className="w-full sm:w-auto min-h-[44px] bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-lg px-5 py-2 text-sm transition-colors"
         >
           {isEnding ? 'Ending...' : 'End Shift'}
         </button>

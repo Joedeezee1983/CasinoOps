@@ -65,13 +65,13 @@ export default function MachinesDown() {
       </div>
       <div className="divide-y divide-[#8B2E1A]/30">
         {machines.map((machine, index) => (
-          <div key={`${machine.machineNumber}-${index}`} className="px-5 py-3 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div key={`${machine.machineNumber}-${index}`} className="px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
               <span className="text-[#D4A017] font-bold text-sm">#{machine.machineNumber}</span>
               <span className="text-casino-text text-sm">{machine.location}</span>
               <span className="text-casino-muted text-xs">Tech: {machine.techName}</span>
             </div>
-            <span className="text-[#D4A017] text-xs font-medium whitespace-nowrap">
+            <span className="text-[#D4A017] text-xs font-medium whitespace-nowrap self-start sm:self-auto">
               Down {elapsedTime(machine.createdAt)}
             </span>
           </div>

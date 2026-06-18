@@ -68,7 +68,7 @@ export default function TaskForm({ onTaskAdded }: TaskFormProps) {
           {error}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs text-casino-muted mb-1">Machine #</label>
           <input
@@ -129,14 +129,14 @@ export default function TaskForm({ onTaskAdded }: TaskFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex-1 bg-casino-accent hover:bg-casino-accent-hover disabled:opacity-50 text-black font-semibold rounded-lg px-4 py-2 text-sm transition-colors"
+          className="flex-1 min-h-[44px] bg-casino-accent hover:bg-casino-accent-hover disabled:opacity-50 text-black font-semibold rounded-lg px-4 py-2 text-sm transition-colors"
         >
           {isSubmitting ? 'Logging...' : 'Log Task'}
         </button>
         <button
           type="button"
           onClick={() => { setIsOpen(false); setError(null) }}
-          className="px-4 py-2 text-sm text-casino-muted hover:text-casino-text border border-casino-border rounded-lg transition-colors"
+          className="min-h-[44px] px-4 py-2 text-sm text-casino-muted hover:text-casino-text border border-casino-border rounded-lg transition-colors"
         >
           Cancel
         </button>
