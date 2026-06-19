@@ -9,6 +9,7 @@ export default function BriefingClient() {
   const [report, setReport] = useState<ShiftReportSummary | null | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -26,6 +27,26 @@ export default function BriefingClient() {
 
     fetchReport()
   }, [])
+
+  const handleExportPDF = async () => {
+    if (!report || isExporting) return
+    setIsExporting(true)
+    try {
+      const res = await fetch(`/api/shifts/${report.shiftId}/export`)
+      if (!res.ok) throw new Error('Export failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `shift-report-${new Date(report.shift.startTime).toISOString().slice(0, 10)}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      // Non-critical: export failure does not affect briefing display
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -67,9 +88,16 @@ export default function BriefingClient() {
             {report.shift.endTime && ` → ${formatDate(report.shift.endTime)}`}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-3 flex-shrink-0">
           <span className="text-casino-accent text-xs font-medium">AI Summary</span>
           <span className="text-casino-muted text-xs">· Claude</span>
+          <button
+            onClick={handleExportPDF}
+            disabled={isExporting}
+            className="px-3 py-1.5 text-xs font-medium bg-casino-border hover:bg-casino-border/70 text-casino-text rounded-lg transition-colors disabled:opacity-50"
+          >
+            {isExporting ? 'Generating…' : 'Export PDF'}
+          </button>
         </div>
       </div>
       <div className="px-6 py-5">

@@ -95,6 +95,21 @@ export interface CreateUserInput {
   role: UserRole
 }
 
+export interface ShiftExportData {
+  id: string
+  startTime: Date
+  endTime: Date | null
+  techName: string
+  tasks: Array<{
+    machineNumber: string
+    location: string
+    issueType: IssueType
+    actionTaken: string
+    status: TaskStatus
+  }>
+  aiSummary: string | null
+}
+
 export interface ApiResponse<T> {
   data: T
 }

@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import type { ShiftWithTasks } from '@/types'
+import type { ShiftWithTasks, ShiftExportData } from '@/types'
 
 /**
  * Starts a new shift for the given tech. Throws if the tech already has an active shift.
@@ -100,6 +100,44 @@ export async function getActiveShift(techId: string): Promise<ShiftWithTasks | n
       },
     },
   })
+}
+
+/**
+ * Fetches a shift by ID with all task and report data needed for PDF export.
+ * Returns null if the shift does not exist.
+ */
+export async function getShiftForExport(shiftId: string): Promise<ShiftExportData | null> {
+  const shift = await db.shift.findUnique({
+    where: { id: shiftId },
+    select: {
+      id: true,
+      startTime: true,
+      endTime: true,
+      tech: { select: { name: true } },
+      tasks: {
+        select: {
+          machineNumber: true,
+          location: true,
+          issueType: true,
+          actionTaken: true,
+          status: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      },
+      report: { select: { aiSummary: true } },
+    },
+  })
+
+  if (!shift) return null
+
+  return {
+    id: shift.id,
+    startTime: shift.startTime,
+    endTime: shift.endTime,
+    techName: shift.tech.name,
+    tasks: shift.tasks,
+    aiSummary: shift.report?.aiSummary ?? null,
+  }
 }
 
 /**
