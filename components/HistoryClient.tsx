@@ -52,12 +52,14 @@ export default function HistoryClient({ initialReports }: HistoryClientProps) {
                 <span className="text-casino-muted text-xs ml-1">→ {formatDate(report.shift.endTime)}</span>
               )}
             </div>
-            <button
-              onClick={() => window.open(`/api/shifts/${report.shiftId}/export`, '_blank')}
-              className="px-3 py-1.5 text-xs font-medium bg-casino-border hover:bg-casino-border/70 text-casino-text rounded-lg transition-colors flex-shrink-0"
+            <a
+              href={`/api/shifts/${report.shiftId}/export`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-4 py-2 bg-amber-500 text-black font-bold rounded hover:bg-amber-400 transition-colors flex-shrink-0"
             >
               Export PDF
-            </button>
+            </a>
           </div>
           <div className="text-casino-text text-sm whitespace-pre-wrap leading-relaxed">
             {report.aiSummary}

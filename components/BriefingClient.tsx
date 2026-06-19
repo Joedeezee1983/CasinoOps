@@ -69,12 +69,14 @@ export default function BriefingClient() {
         <div className="flex items-center gap-3 flex-shrink-0">
           <span className="text-casino-accent text-xs font-medium">AI Summary</span>
           <span className="text-casino-muted text-xs">· Claude</span>
-          <button
-            onClick={() => window.open(`/api/shifts/${report.shiftId}/export`, '_blank')}
-            className="px-3 py-1.5 text-xs font-medium bg-casino-border hover:bg-casino-border/70 text-casino-text rounded-lg transition-colors"
+          <a
+            href={`/api/shifts/${report.shiftId}/export`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-4 py-2 bg-amber-500 text-black font-bold rounded hover:bg-amber-400 transition-colors"
           >
             Export PDF
-          </button>
+          </a>
         </div>
       </div>
       <div className="px-6 py-5">
