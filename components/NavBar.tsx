@@ -24,7 +24,7 @@ export default function NavBar({ user }: NavBarProps) {
     { href: '/machines', label: 'Machines' },
     { href: '/history', label: 'History' },
     ...(isSupervisor ? [{ href: '/supervisor', label: 'Supervisor' }] : []),
-    ...(isAdmin ? [{ href: '/admin/users', label: 'Users' }] : []),
+    ...(isAdmin ? [{ href: '/admin/users', label: 'Users' }, { href: '/admin/settings', label: 'Settings' }] : []),
   ]
 
   return (

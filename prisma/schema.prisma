@@ -81,7 +81,7 @@ model Task {
   status        TaskStatus @default(PENDING)
   createdAt     DateTime   @default(now())
 
-  shift      Shift        @relation(fields: [shiftId], references: [id])
+  shift      Shift        @relation(fields: [shiftId], references: [id], onDelete: Cascade)
   partsOrders PartsOrder[]
 }
 
@@ -92,7 +92,7 @@ model ShiftReport {
   sentAt    DateTime?
   createdAt DateTime @default(now())
 
-  shift Shift @relation(fields: [shiftId], references: [id])
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 }
 
 model Machine {
@@ -115,5 +115,5 @@ model PartsOrder {
   createdAt       DateTime         @default(now())
 
   machine Machine @relation(fields: [machineId], references: [id])
-  task    Task    @relation(fields: [taskId], references: [id])
+  task    Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
