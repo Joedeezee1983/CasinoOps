@@ -69,6 +69,16 @@ function formatPdfTime(date: Date): string {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
+function stripEmoji(text: string): string {
+  return text
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+    .replace(/[\u{2600}-\u{26FF}]/gu, '')
+    .replace(/[\u{2700}-\u{27BF}]/gu, '')
+    .replace(/[^\x00-\x7F]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function stripMarkdown(text: string): string {
   return text
     .replace(/\*\*([^*]+)\*\*/g, '$1')
@@ -119,7 +129,7 @@ function drawText(
   page: PDFPage, text: string, x: number, y: number,
   font: PDFFont, size: number, color: Color = BLACK
 ): void {
-  page.drawText(text, { x, y, font, size, color })
+  page.drawText(stripEmoji(text), { x, y, font, size, color })
 }
 
 function drawCentered(
