@@ -71,9 +71,6 @@ function formatPdfTime(date: Date): string {
 
 function stripEmoji(text: string): string {
   return text
-    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
-    .replace(/[\u{2600}-\u{26FF}]/gu, '')
-    .replace(/[\u{2700}-\u{27BF}]/gu, '')
     .replace(/[^\x00-\x7F]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
