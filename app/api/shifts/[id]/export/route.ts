@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
-    if (!rateLimit(getRequestIp(req))) {
+    if (!rateLimit(getRequestIp(_req))) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
 
