@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { deleteOldShifts, countShiftsOlderThan } from '@/lib/cleanup-service'
+import { rateLimit, getRequestIp } from '@/lib/rate-limit'
 
 const MIN_RETENTION_DAYS = 30
 
@@ -13,6 +14,10 @@ function parseDaysToKeep(value: unknown): number | null {
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -33,6 +38,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
 export async function DELETE(req: NextRequest): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

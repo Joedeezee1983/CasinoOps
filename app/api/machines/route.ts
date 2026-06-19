@@ -3,9 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getAllMachines, createMachine } from '@/lib/machine-service'
 import { validateCreateMachineInput } from '@/lib/validation'
+import { rateLimit, getRequestIp } from '@/lib/rate-limit'
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -21,6 +26,10 @@ export async function GET(): Promise<NextResponse> {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session || !['SUPERVISOR', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -4,9 +4,14 @@ import { authOptions } from '@/lib/auth'
 import { createTask } from '@/lib/task-service'
 import { validateCreateTaskInput } from '@/lib/validation'
 import { getActiveShift } from '@/lib/shift-service'
+import { rateLimit, getRequestIp } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

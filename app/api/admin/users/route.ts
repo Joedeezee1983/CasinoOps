@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getAllUsers, createUser } from '@/lib/user-service'
+import { rateLimit, getRequestIp } from '@/lib/rate-limit'
+import { MAX_FIELD_LENGTH } from '@/lib/validation'
 import type { UserRole } from '@prisma/client'
 
 const VALID_ROLES: UserRole[] = ['TECH', 'SUPERVISOR', 'ADMIN']
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -23,6 +29,10 @@ export async function GET(): Promise<NextResponse> {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -56,9 +66,9 @@ function isCreateUserBody(value: unknown): value is CreateUserBody {
   if (typeof value !== 'object' || value === null) return false
   const v = value as Record<string, unknown>
   return (
-    typeof v.name === 'string' && v.name.trim().length > 0 &&
-    typeof v.email === 'string' && v.email.includes('@') &&
-    typeof v.password === 'string' && v.password.length >= 6 &&
+    typeof v.name === 'string' && v.name.trim().length > 0 && v.name.length <= MAX_FIELD_LENGTH &&
+    typeof v.email === 'string' && v.email.includes('@') && v.email.length <= MAX_FIELD_LENGTH &&
+    typeof v.password === 'string' && v.password.length >= 6 && v.password.length <= MAX_FIELD_LENGTH &&
     typeof v.role === 'string' && VALID_ROLES.includes(v.role as UserRole)
   )
 }

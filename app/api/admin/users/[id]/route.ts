@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { setUserActive } from '@/lib/user-service'
+import { rateLimit, getRequestIp } from '@/lib/rate-limit'
 
 interface RouteParams {
   params: { id: string }
@@ -9,6 +10,10 @@ interface RouteParams {
 
 export async function PATCH(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -1,6 +1,14 @@
 import type { IssueType, TaskStatus, MachineStatus } from '@prisma/client'
 import type { CreateTaskInput, CreateMachineInput } from '@/types'
 
+export const MAX_FIELD_LENGTH = 500
+
+function assertMaxLength(value: string, field: string): void {
+  if (value.length > MAX_FIELD_LENGTH) {
+    throw new Error(`${field} must not exceed ${MAX_FIELD_LENGTH} characters`)
+  }
+}
+
 const VALID_ISSUE_TYPES: IssueType[] = [
   'DOWN_MACHINE', 'CPU_WORK', 'GMU_WORK', 'SDS_WORK', 'LOCK_CHANGE', 'BUTTON_PANEL', 'OTHER',
 ]
@@ -22,15 +30,18 @@ export function validateCreateTaskInput(body: unknown): CreateTaskInput {
   if (typeof b.machineNumber !== 'string' || !b.machineNumber.trim()) {
     throw new Error('machineNumber is required')
   }
+  assertMaxLength(b.machineNumber, 'machineNumber')
   if (typeof b.location !== 'string' || !b.location.trim()) {
     throw new Error('location is required')
   }
+  assertMaxLength(b.location, 'location')
   if (!VALID_ISSUE_TYPES.includes(b.issueType as IssueType)) {
     throw new Error(`issueType must be one of: ${VALID_ISSUE_TYPES.join(', ')}`)
   }
   if (typeof b.actionTaken !== 'string' || !b.actionTaken.trim()) {
     throw new Error('actionTaken is required')
   }
+  assertMaxLength(b.actionTaken, 'actionTaken')
   if (!VALID_TASK_STATUSES.includes(b.status as TaskStatus)) {
     throw new Error(`status must be one of: ${VALID_TASK_STATUSES.join(', ')}`)
   }
@@ -58,12 +69,15 @@ export function validateCreateMachineInput(body: unknown): CreateMachineInput {
   if (typeof b.machineNumber !== 'string' || !b.machineNumber.trim()) {
     throw new Error('machineNumber is required')
   }
+  assertMaxLength(b.machineNumber, 'machineNumber')
   if (typeof b.location !== 'string' || !b.location.trim()) {
     throw new Error('location is required')
   }
+  assertMaxLength(b.location, 'location')
   if (typeof b.type !== 'string' || !b.type.trim()) {
     throw new Error('type is required')
   }
+  assertMaxLength(b.type, 'type')
 
   return {
     machineNumber: b.machineNumber as string,

@@ -3,12 +3,17 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { updateMachineStatus } from '@/lib/machine-service'
 import { validateMachineStatus } from '@/lib/validation'
+import { rateLimit, getRequestIp } from '@/lib/rate-limit'
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getShiftHistory } from '@/lib/briefing-service'
+import { rateLimit, getRequestIp } from '@/lib/rate-limit'
 
 const DEFAULT_PAGE = 1
 const DEFAULT_PAGE_SIZE = 10
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

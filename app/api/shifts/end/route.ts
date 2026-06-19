@@ -1,13 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { endShift } from '@/lib/shift-service'
 import { generateShiftSummary } from '@/lib/claude'
 import { saveShiftReport } from '@/lib/briefing-service'
 import { sendShiftSummaryEmail } from '@/lib/email-service'
+import { rateLimit, getRequestIp } from '@/lib/rate-limit'
 
-export async function POST(): Promise<NextResponse> {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
+    if (!rateLimit(getRequestIp(req))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
