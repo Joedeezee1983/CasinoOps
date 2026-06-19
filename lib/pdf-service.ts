@@ -1,58 +1,20 @@
-import { PDFDocument, PDFPage, PDFFont, StandardFonts, rgb } from 'pdf-lib'
 import type { ShiftExportData } from '@/types'
 import { ISSUE_TYPE_LABELS } from '@/constants'
 
-// --- Page layout ---
+const REPORT_COLORS = {
+  gold: '#D4A017',
+  blue: '#00AEEF',
+  red: '#cc0000',
+  dark: '#2e2e2e',
+} as const
 
-const PAGE_W = 612
-const PAGE_H = 792
-const MARGIN = 40
-const CONTENT_W = PAGE_W - MARGIN * 2
-
-// --- Colors ---
-
-const GOLD = rgb(212 / 255, 160 / 255, 23 / 255)    // #D4A017
-const BLUE = rgb(0 / 255, 174 / 255, 239 / 255)     // #00AEEF
-const RED = rgb(1, 0, 0)                              // #FF0000
-const WHITE = rgb(1, 1, 1)
-const BLACK = rgb(0, 0, 0)
-const DARK = rgb(0.18, 0.18, 0.18)
-const COL_BG = rgb(0.87, 0.87, 0.87)
-const ROW_ALT = rgb(0.95, 0.95, 0.95)
-
-// --- Sizes ---
-
-const TITLE_SIZE = 15
-const SECTION_SIZE = 11
-const COL_SIZE = 9
-const DATA_SIZE = 9
-const INFO_SIZE = 9
-const NOTES_SIZE = 9
-const LINE_H = 13
-
-const TITLE_BAR_H = 70
-const INFO_H = 28
-const SECTION_H = 24
-const COL_H = 18
-const ROW_H = 19
-
-// --- Column definitions ---
-
-interface ColDef { label: string; x: number; width: number }
-
-const STAFF_COLS: ColDef[] = [
-  { label: 'NAME',       x: MARGIN,       width: 195 },
-  { label: 'TIME IN',    x: MARGIN + 195, width: 90  },
-  { label: 'TIME OUT',   x: MARGIN + 285, width: 90  },
-  { label: 'ASSIGNMENT', x: MARGIN + 375, width: 157 },
-]
-
-const MACHINE_COLS: ColDef[] = [
-  { label: 'MACHINE',     x: MARGIN,       width: 150 },
-  { label: 'DESCRIPTION', x: MARGIN + 150, width: 382 },
-]
-
-// --- Utility functions ---
+function escape(text: string): string {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
 
 function getShiftType(startTime: Date): 'DAY' | 'SWING' | 'GRAVE' {
   const hour = startTime.getHours()
@@ -61,19 +23,12 @@ function getShiftType(startTime: Date): 'DAY' | 'SWING' | 'GRAVE' {
   return 'GRAVE'
 }
 
-function formatPdfDate(date: Date): string {
+function formatReportDate(date: Date): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function formatPdfTime(date: Date): string {
+function formatReportTime(date: Date): string {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-}
-
-function stripEmoji(text: string): string {
-  return text
-    .replace(/[^\x00-\x7F]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
 }
 
 function stripMarkdown(text: string): string {
@@ -85,177 +40,107 @@ function stripMarkdown(text: string): string {
     .trim()
 }
 
-function wrapText(text: string, font: PDFFont, size: number, maxW: number): string[] {
-  const lines: string[] = []
-  for (const para of text.split('\n')) {
-    if (!para.trim()) { lines.push(''); continue }
-    const words = para.split(' ')
-    let line = ''
-    for (const word of words) {
-      const test = line ? `${line} ${word}` : word
-      if (font.widthOfTextAtSize(test, size) > maxW && line) {
-        lines.push(line)
-        line = word
-      } else {
-        line = test
-      }
+function buildStyles(): string {
+  return `
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 9pt; color: #2e2e2e; background: #fff; }
+    .title-bar { background: ${REPORT_COLORS.gold}; color: #fff; text-align: center; padding: 20px 40px; font-size: 15pt; font-weight: bold; letter-spacing: 0.3px; }
+    .info-bar { background: ${REPORT_COLORS.dark}; color: #fff; padding: 8px 40px; font-size: 9pt; }
+    .content { padding: 0 40px 40px; }
+    .section-header { padding: 6px 8px; font-size: 11pt; font-weight: bold; color: #fff; margin-top: 16px; }
+    .blue { background: ${REPORT_COLORS.blue}; }
+    .red { background: ${REPORT_COLORS.red}; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #dedede; font-size: 9pt; font-weight: bold; padding: 5px 4px; text-align: left; }
+    td { font-size: 9pt; padding: 5px 4px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+    tr:nth-child(even) td { background: #f3f3f3; }
+    .notes { padding: 8px; font-size: 9pt; line-height: 1.6; white-space: pre-wrap; }
+    @media print {
+      @page { margin: 0.5in; size: letter; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
-    if (line) lines.push(line)
-  }
-  return lines
+  `
 }
 
-function truncateToFit(text: string, font: PDFFont, size: number, maxW: number): string {
-  if (font.widthOfTextAtSize(text, size) <= maxW) return text
-  let result = text
-  while (result.length > 0 && font.widthOfTextAtSize(`${result}…`, size) > maxW) {
-    result = result.slice(0, -1)
-  }
-  return `${result}…`
+function buildInfoBar(data: ShiftExportData): string {
+  const shift = getShiftType(data.startTime)
+  const date = formatReportDate(data.startTime)
+  return `<div class="info-bar">Shift: ${escape(shift)}&nbsp;&nbsp;|&nbsp;&nbsp;Date: ${escape(date)}&nbsp;&nbsp;|&nbsp;&nbsp;Supervisor on Shift: N/A</div>`
 }
 
-// --- Drawing primitives ---
-
-type Color = ReturnType<typeof rgb>
-
-function drawRect(page: PDFPage, x: number, y: number, w: number, h: number, color: Color): void {
-  page.drawRectangle({ x, y, width: w, height: h, color })
+function buildStaffSection(data: ShiftExportData): string {
+  const timeIn = formatReportTime(data.startTime)
+  const timeOut = data.endTime ? formatReportTime(data.endTime) : 'ACTIVE'
+  return `
+    <div class="section-header blue">STAFF ON SHIFT</div>
+    <table>
+      <thead><tr>
+        <th style="width:36.7%">NAME</th>
+        <th style="width:16.9%">TIME IN</th>
+        <th style="width:16.9%">TIME OUT</th>
+        <th style="width:29.5%">ASSIGNMENT</th>
+      </tr></thead>
+      <tbody><tr>
+        <td>${escape(data.techName)}</td>
+        <td>${escape(timeIn)}</td>
+        <td>${escape(timeOut)}</td>
+        <td>SLOT TECH</td>
+      </tr></tbody>
+    </table>`
 }
 
-function drawText(
-  page: PDFPage, text: string, x: number, y: number,
-  font: PDFFont, size: number, color: Color = BLACK
-): void {
-  page.drawText(stripEmoji(text), { x, y, font, size, color })
-}
-
-function drawCentered(
-  page: PDFPage, text: string, barY: number, barH: number,
-  font: PDFFont, size: number, color: Color
-): void {
-  const x = (PAGE_W - font.widthOfTextAtSize(text, size)) / 2
-  const y = barY + (barH - size) / 2
-  drawText(page, text, x, y, font, size, color)
-}
-
-// --- Section drawing ---
-
-function drawTitleBar(page: PDFPage, bold: PDFFont, topY: number): number {
-  const barY = topY - TITLE_BAR_H
-  drawRect(page, 0, barY, PAGE_W, TITLE_BAR_H, GOLD)
-  drawCentered(page, 'RIVER ROCK CASINO — SLOT TECHNICAL SHIFT REPORT', barY, TITLE_BAR_H, bold, TITLE_SIZE, WHITE)
-  return barY
-}
-
-function drawInfoBar(page: PDFPage, regular: PDFFont, data: ShiftExportData, topY: number): number {
-  const barY = topY - INFO_H
-  drawRect(page, 0, barY, PAGE_W, INFO_H, DARK)
-  const label = `Shift: ${getShiftType(data.startTime)}   |   Date: ${formatPdfDate(data.startTime)}   |   Supervisor on Shift: N/A`
-  drawText(page, label, MARGIN, barY + (INFO_H - INFO_SIZE) / 2, regular, INFO_SIZE, WHITE)
-  return barY
-}
-
-function drawSectionHeader(page: PDFPage, label: string, bold: PDFFont, color: Color, topY: number): number {
-  const barY = topY - SECTION_H
-  drawRect(page, MARGIN, barY, CONTENT_W, SECTION_H, color)
-  drawText(page, label, MARGIN + 8, barY + (SECTION_H - SECTION_SIZE) / 2, bold, SECTION_SIZE, WHITE)
-  return barY
-}
-
-function drawColHeaders(page: PDFPage, cols: ColDef[], bold: PDFFont, topY: number): number {
-  const barY = topY - COL_H
-  drawRect(page, MARGIN, barY, CONTENT_W, COL_H, COL_BG)
-  for (const col of cols) {
-    drawText(page, col.label, col.x + 4, barY + (COL_H - COL_SIZE) / 2, bold, COL_SIZE, BLACK)
-  }
-  return barY
-}
-
-function drawRow(
-  page: PDFPage, cols: ColDef[], values: string[],
-  regular: PDFFont, topY: number, isAlt: boolean
-): number {
-  const barY = topY - ROW_H
-  if (isAlt) drawRect(page, MARGIN, barY, CONTENT_W, ROW_H, ROW_ALT)
-  for (let i = 0; i < cols.length; i++) {
-    const col = cols[i]
-    const text = truncateToFit(values[i] ?? '', regular, DATA_SIZE, col.width - 8)
-    drawText(page, text, col.x + 4, barY + (ROW_H - DATA_SIZE) / 2, regular, DATA_SIZE, BLACK)
-  }
-  return barY
-}
-
-// --- Content sections ---
-
-function drawStaffSection(
-  page: PDFPage, regular: PDFFont, bold: PDFFont,
-  data: ShiftExportData, topY: number
-): number {
-  let y = drawSectionHeader(page, 'STAFF ON SHIFT', bold, BLUE, topY - 15)
-  y = drawColHeaders(page, STAFF_COLS, bold, y)
-  const timeIn = formatPdfTime(data.startTime)
-  const timeOut = data.endTime ? formatPdfTime(data.endTime) : 'ACTIVE'
-  return drawRow(page, STAFF_COLS, [data.techName, timeIn, timeOut, 'SLOT TECH'], regular, y, false)
-}
-
-function drawMachinesSection(
-  page: PDFPage, regular: PDFFont, bold: PDFFont,
-  data: ShiftExportData, topY: number
-): number {
-  let y = drawSectionHeader(page, 'MACHINES OUT OF SERVICE', bold, RED, topY - 15)
-  y = drawColHeaders(page, MACHINE_COLS, bold, y)
-
+function buildMachinesSection(data: ShiftExportData): string {
   const oos = data.tasks.filter((t) => t.status !== 'RESOLVED')
-  if (oos.length === 0) {
-    return drawRow(page, MACHINE_COLS, ['All clear — no machines out of service', ''], regular, y, false)
-  }
-
-  oos.forEach((task, i) => {
-    const machine = `${task.location} #${task.machineNumber}`
-    const desc = `${ISSUE_TYPE_LABELS[task.issueType]}: ${task.actionTaken}`
-    y = drawRow(page, MACHINE_COLS, [machine, desc], regular, y, i % 2 === 1)
-  })
-  return y
+  const rows = oos.length === 0
+    ? `<tr><td colspan="2" style="color:#666">All clear — no machines out of service</td></tr>`
+    : oos.map((task, i) => {
+        const machine = escape(`${task.location} #${task.machineNumber}`)
+        const desc = escape(`${ISSUE_TYPE_LABELS[task.issueType]}: ${task.actionTaken}`)
+        const bg = i % 2 === 1 ? 'background:#f3f3f3;' : ''
+        return `<tr><td style="width:28.2%;${bg}">${machine}</td><td style="${bg}">${desc}</td></tr>`
+      }).join('')
+  return `
+    <div class="section-header red">MACHINES OUT OF SERVICE</div>
+    <table>
+      <thead><tr>
+        <th style="width:28.2%">MACHINE</th>
+        <th>DESCRIPTION</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`
 }
 
-function drawNotesSection(
-  page: PDFPage, regular: PDFFont, bold: PDFFont,
-  data: ShiftExportData, topY: number
-): number {
-  let y = drawSectionHeader(page, 'NOTES / SHIFT SUMMARY', bold, BLUE, topY - 15)
-
-  if (!data.aiSummary) {
-    drawText(page, 'No shift summary available.', MARGIN + 8, y - NOTES_SIZE - 8, regular, NOTES_SIZE)
-    return y - NOTES_SIZE - 16
-  }
-
-  const lines = wrapText(stripMarkdown(data.aiSummary), regular, NOTES_SIZE, CONTENT_W - 16)
-  let noteY = y - LINE_H
-  for (const line of lines) {
-    if (noteY < MARGIN + 10) break
-    if (line) drawText(page, line, MARGIN + 8, noteY, regular, NOTES_SIZE)
-    noteY -= LINE_H
-  }
-  return noteY
+function buildNotesSection(data: ShiftExportData): string {
+  const content = data.aiSummary
+    ? escape(stripMarkdown(data.aiSummary))
+    : 'No shift summary available.'
+  return `
+    <div class="section-header blue">NOTES / SHIFT SUMMARY</div>
+    <div class="notes">${content}</div>`
 }
-
-// --- Main export ---
 
 /**
- * Generates a River Rock Casino Slot Technical Shift Report PDF.
- * Returns the raw PDF bytes ready to stream as a response.
+ * Generates a printable HTML page for the River Rock Casino Slot Technical Shift Report.
+ * The page auto-triggers window.print() on load so the user can save as PDF natively.
  */
-export async function generateShiftPDF(data: ShiftExportData): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.create()
-  const page = pdfDoc.addPage([PAGE_W, PAGE_H])
-  const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-  const regular = await pdfDoc.embedFont(StandardFonts.Helvetica)
-
-  let y = drawTitleBar(page, bold, PAGE_H)
-  y = drawInfoBar(page, regular, data, y)
-  y = drawStaffSection(page, regular, bold, data, y)
-  y = drawMachinesSection(page, regular, bold, data, y)
-  drawNotesSection(page, regular, bold, data, y)
-
-  return pdfDoc.save()
+export function generateShiftReportHTML(data: ShiftExportData): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>River Rock Casino — Slot Technical Shift Report</title>
+  <style>${buildStyles()}</style>
+</head>
+<body>
+  <div class="title-bar">RIVER ROCK CASINO — SLOT TECHNICAL SHIFT REPORT</div>
+  ${buildInfoBar(data)}
+  <div class="content">
+    ${buildStaffSection(data)}
+    ${buildMachinesSection(data)}
+    ${buildNotesSection(data)}
+  </div>
+  <script>window.addEventListener('load', () => window.print())</script>
+</body>
+</html>`
 }

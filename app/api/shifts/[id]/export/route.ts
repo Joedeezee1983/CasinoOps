@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getShiftForExport } from '@/lib/shift-service'
-import { generateShiftPDF } from '@/lib/pdf-service'
-
-function formatExportDate(date: Date): string {
-  return date.toISOString().slice(0, 10)
-}
+import { generateShiftReportHTML } from '@/lib/pdf-service'
 
 export async function GET(
   _req: NextRequest,
@@ -23,17 +19,13 @@ export async function GET(
       return NextResponse.json({ error: 'Shift not found' }, { status: 404 })
     }
 
-    const pdfBytes = await generateShiftPDF(shift)
-    const filename = `shift-report-${formatExportDate(shift.startTime)}.pdf`
+    const html = generateShiftReportHTML(shift)
 
-    return new NextResponse(Buffer.from(pdfBytes), {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
+    return new NextResponse(html, {
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
     })
   } catch (error) {
     console.error('[shifts/export/GET] Unexpected error:', error)
-    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate report' }, { status: 500 })
   }
 }
