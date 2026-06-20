@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { ShiftReportSummary } from '@/types'
 import { formatDate } from '@/utils/format-date'
+import { ClearHistoryButton } from '@/components/ClearHistoryButton'
 
 export interface HistoryClientProps {
   initialReports: ShiftReportSummary[]
@@ -15,6 +16,7 @@ export default function HistoryClient({ initialReports }: HistoryClientProps) {
   const [page, setPage] = useState(1)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(initialReports.length === PAGE_SIZE)
+
   const handleLoadMore = async () => {
     setIsLoadingMore(true)
     try {
@@ -32,6 +34,11 @@ export default function HistoryClient({ initialReports }: HistoryClientProps) {
     }
   }
 
+  const handleCleared = (): void => {
+    setReports([])
+    setHasMore(false)
+  }
+
   if (reports.length === 0) {
     return (
       <div className="bg-casino-card border border-casino-border rounded-xl p-8 text-center">
@@ -42,6 +49,9 @@ export default function HistoryClient({ initialReports }: HistoryClientProps) {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <ClearHistoryButton onCleared={handleCleared} />
+      </div>
       {reports.map((report) => (
         <div key={report.id} className="bg-casino-card border border-casino-border rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">

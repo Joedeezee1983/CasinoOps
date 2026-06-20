@@ -63,6 +63,42 @@ export function scheduleAutoCleanup(): void {
   setInterval(() => void run(), CLEANUP_INTERVAL_MS)
 }
 
+/**
+ * Deletes all completed shifts for a specific user.
+ * Tasks and ShiftReports are removed via database cascade.
+ * Active shifts are never deleted.
+ * Returns the count of deleted shifts.
+ */
+export async function deleteCompletedShiftsForUser(userId: string): Promise<number> {
+  const { count } = await db.shift.deleteMany({
+    where: { techId: userId, status: 'COMPLETED' },
+  })
+  return count
+}
+
+/**
+ * Returns the count of completed shifts for a specific user.
+ */
+export async function countCompletedShiftsForUser(userId: string): Promise<number> {
+  return db.shift.count({ where: { techId: userId, status: 'COMPLETED' } })
+}
+
+/**
+ * Deletes all completed shifts across all users.
+ * Returns the count of deleted shifts.
+ */
+export async function deleteAllCompletedShifts(): Promise<number> {
+  const { count } = await db.shift.deleteMany({ where: { status: 'COMPLETED' } })
+  return count
+}
+
+/**
+ * Returns the total count of completed shifts across all users.
+ */
+export async function countAllCompletedShifts(): Promise<number> {
+  return db.shift.count({ where: { status: 'COMPLETED' } })
+}
+
 function buildCutoffDate(daysToKeep: number): Date {
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - daysToKeep)
