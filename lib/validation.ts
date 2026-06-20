@@ -1,4 +1,4 @@
-import type { IssueType, TaskStatus, MachineStatus } from '@prisma/client'
+import type { IssueType, TaskStatus, MachineStatus, TaskSection } from '@prisma/client'
 import type { CreateTaskInput, CreateMachineInput } from '@/types'
 
 export const MAX_FIELD_LENGTH = 500
@@ -14,6 +14,9 @@ const VALID_ISSUE_TYPES: IssueType[] = [
 ]
 
 const VALID_TASK_STATUSES: TaskStatus[] = ['RESOLVED', 'PENDING', 'PARTS_ORDERED']
+const VALID_TASK_SECTIONS: TaskSection[] = [
+  'FLOOR_GAME', 'PRE_EXISTING_DOWN', 'KIOSK', 'BENCH_OFFICE', 'MISCELLANEOUS',
+]
 const VALID_MACHINE_STATUSES: MachineStatus[] = ['OPERATIONAL', 'DOWN', 'PENDING_PARTS']
 
 /**
@@ -45,6 +48,9 @@ export function validateCreateTaskInput(body: unknown): CreateTaskInput {
   if (!VALID_TASK_STATUSES.includes(b.status as TaskStatus)) {
     throw new Error(`status must be one of: ${VALID_TASK_STATUSES.join(', ')}`)
   }
+  if (!VALID_TASK_SECTIONS.includes(b.section as TaskSection)) {
+    throw new Error(`section must be one of: ${VALID_TASK_SECTIONS.join(', ')}`)
+  }
 
   return {
     machineNumber: b.machineNumber as string,
@@ -52,6 +58,7 @@ export function validateCreateTaskInput(body: unknown): CreateTaskInput {
     issueType: b.issueType as IssueType,
     actionTaken: b.actionTaken as string,
     status: b.status as TaskStatus,
+    section: b.section as TaskSection,
   }
 }
 

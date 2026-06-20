@@ -57,13 +57,19 @@ export async function generateShiftBriefing(data: BriefingData): Promise<string>
 function buildShiftSummaryPrompt(context: string): string {
   return `You are an AI assistant for a casino slot tech team. Summarize the completed shift below for the incoming team.
 
-Include:
-- Machines worked on and their current status
+The shift data is organized by section. Summarize each section that has tasks:
+- Pre-Existing Down Games: machines that were already down before the shift — note which remain unresolved
+- Games Worked On This Shift: floor machines worked during the shift and their current status
+- Kiosks: any kiosk issues and outcomes
+- Bench / Office Work: shop repairs, button panels, monitors, reels, etc.
+- Miscellaneous: anything that doesn't fit above
+
+Also include:
 - Any unresolved or pending tasks the incoming team needs to handle
 - Parts ordered (if any)
-- A 2-3 sentence overall shift summary
+- A 2-3 sentence overall shift summary at the end
 
-Be direct and professional. Use bullet points. No fluff.
+Be direct and professional. Use bullet points. Omit sections with no tasks. No fluff.
 
 SHIFT DATA:
 ${context}`

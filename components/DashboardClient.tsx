@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { ShiftWithTasks } from '@/types'
+import type { ShiftWithTasks, TaskSummary } from '@/types'
 import { ShiftStatus } from '@/components/ShiftStatus'
 import { TaskForm } from '@/components/TaskForm'
 import { TaskCard } from '@/components/TaskCard'
+import { PreExistingDownModal } from '@/components/PreExistingDownModal'
 
 export interface DashboardClientProps {
   initialShift: ShiftWithTasks | null
@@ -18,6 +19,7 @@ export default function DashboardClient({ initialShift, techName: _techName }: D
   const [isStarting, setIsStarting] = useState(false)
   const [isEnding, setIsEnding] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPreExistingModal, setShowPreExistingModal] = useState(false)
 
   const handleStartShift = async () => {
     setIsStarting(true)
@@ -26,12 +28,21 @@ export default function DashboardClient({ initialShift, techName: _techName }: D
       const res = await fetch('/api/shifts', { method: 'POST' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
-      const updated = await fetch('/api/shifts').then((r) => r.json())
-      setShift(updated.data)
+      setShowPreExistingModal(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start shift')
     } finally {
       setIsStarting(false)
+    }
+  }
+
+  const handlePreExistingDone = async (_addedTasks: TaskSummary[]) => {
+    setShowPreExistingModal(false)
+    try {
+      const updated = await fetch('/api/shifts').then((r) => r.json())
+      setShift(updated.data)
+    } catch {
+      setError('Shift started but failed to load. Please refresh.')
     }
   }
 
@@ -71,6 +82,10 @@ export default function DashboardClient({ initialShift, techName: _techName }: D
 
   return (
     <div className="space-y-6">
+      {showPreExistingModal && (
+        <PreExistingDownModal onDone={handlePreExistingDone} />
+      )}
+
       {error && (
         <div className="bg-red-900/30 border border-red-800 text-red-300 text-sm rounded-lg px-4 py-3">
           {error}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { IssueType, TaskStatus } from '@prisma/client'
+import type { IssueType, TaskStatus, TaskSection } from '@prisma/client'
 import type { TaskSummary } from '@/types'
 import { ISSUE_TYPE_LABELS } from '@/constants'
 
@@ -15,6 +15,7 @@ const ISSUE_TYPES = Object.entries(ISSUE_TYPE_LABELS) as [IssueType, string][]
 const DEFAULT_FORM = {
   machineNumber: '',
   location: '',
+  section: 'FLOOR_GAME' as TaskSection,
   issueType: 'DOWN_MACHINE' as IssueType,
   actionTaken: '',
   status: 'PENDING' as TaskStatus,
@@ -89,6 +90,20 @@ export default function TaskForm({ onTaskAdded }: TaskFormProps) {
             placeholder="e.g. Zone A Row 3"
           />
         </div>
+      </div>
+      <div>
+        <label className="block text-xs text-casino-muted mb-1">Section</label>
+        <select
+          value={form.section}
+          onChange={(e) => setForm({ ...form, section: e.target.value as TaskSection })}
+          className="w-full bg-casino-dark border border-casino-border rounded-lg px-3 py-2 text-casino-text text-sm focus:outline-none focus:border-casino-accent"
+        >
+          <option value="FLOOR_GAME">Floor Game</option>
+          <option value="PRE_EXISTING_DOWN">Pre-Existing Down — machine was already down before shift started</option>
+          <option value="KIOSK">Kiosk</option>
+          <option value="BENCH_OFFICE">Bench / Office Work</option>
+          <option value="MISCELLANEOUS">Miscellaneous</option>
+        </select>
       </div>
       <div>
         <label className="block text-xs text-casino-muted mb-1">Issue Type</label>

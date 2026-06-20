@@ -1,4 +1,4 @@
-import type { IssueType, TaskStatus, MachineStatus } from '@prisma/client'
+import type { IssueType, TaskStatus, MachineStatus, TaskSection } from '@prisma/client'
 
 export const ISSUE_TYPE_LABELS: Record<IssueType, string> = {
   DOWN_MACHINE: 'Down Machine',
@@ -33,6 +33,22 @@ export const MACHINE_STATUS_COLORS: Record<MachineStatus, string> = {
   DOWN: 'bg-red-900 text-red-300',
   PENDING_PARTS: 'bg-yellow-900 text-yellow-300',
 }
+
+export const TASK_SECTION_LABELS: Record<TaskSection, string> = {
+  FLOOR_GAME: 'Floor Game',
+  PRE_EXISTING_DOWN: 'Pre-Existing Down',
+  KIOSK: 'Kiosk',
+  BENCH_OFFICE: 'Bench / Office Work',
+  MISCELLANEOUS: 'Miscellaneous',
+}
+
+export const TASK_SECTION_ORDER: TaskSection[] = [
+  'PRE_EXISTING_DOWN',
+  'FLOOR_GAME',
+  'KIOSK',
+  'BENCH_OFFICE',
+  'MISCELLANEOUS',
+]
 
 export const MAX_BRIEFING_CONTEXT_CHARS = 40000
 export const CLAUDE_MODEL = 'claude-sonnet-4-6'

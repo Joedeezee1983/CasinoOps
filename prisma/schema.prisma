@@ -46,6 +46,14 @@ enum PartsOrderStatus {
   CANCELLED
 }
 
+enum TaskSection {
+  FLOOR_GAME
+  PRE_EXISTING_DOWN
+  KIOSK
+  BENCH_OFFICE
+  MISCELLANEOUS
+}
+
 model User {
   id             String   @id @default(cuid())
   name           String
@@ -72,14 +80,15 @@ model Shift {
 }
 
 model Task {
-  id            String     @id @default(cuid())
+  id            String      @id @default(cuid())
   shiftId       String
   machineNumber String
   location      String
   issueType     IssueType
   actionTaken   String
-  status        TaskStatus @default(PENDING)
-  createdAt     DateTime   @default(now())
+  status        TaskStatus  @default(PENDING)
+  section       TaskSection @default(FLOOR_GAME)
+  createdAt     DateTime    @default(now())
 
   shift      Shift        @relation(fields: [shiftId], references: [id], onDelete: Cascade)
   partsOrders PartsOrder[]

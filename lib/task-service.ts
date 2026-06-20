@@ -27,6 +27,7 @@ export async function createTask(
       issueType: input.issueType,
       actionTaken: input.actionTaken,
       status: input.status,
+      section: input.section,
     },
     select: {
       id: true,
@@ -36,6 +37,7 @@ export async function createTask(
       issueType: true,
       actionTaken: true,
       status: true,
+      section: true,
       createdAt: true,
     },
   })
@@ -92,6 +94,7 @@ export async function updateTaskStatus(
       issueType: true,
       actionTaken: true,
       status: true,
+      section: true,
       createdAt: true,
     },
   })

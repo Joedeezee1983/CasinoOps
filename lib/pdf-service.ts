@@ -1,12 +1,31 @@
-import type { ShiftExportData } from '@/types'
-import { ISSUE_TYPE_LABELS } from '@/constants'
+import type { ShiftExportData, TaskSection } from '@/types'
+import { ISSUE_TYPE_LABELS, TASK_SECTION_ORDER } from '@/constants'
 
 const REPORT_COLORS = {
   gold: '#D4A017',
   blue: '#00AEEF',
   red: '#cc0000',
+  teal: '#008080',
+  purple: '#6A0DAD',
+  gray: '#666666',
   dark: '#2e2e2e',
 } as const
+
+const SECTION_HEADER_COLORS: Record<TaskSection, string> = {
+  PRE_EXISTING_DOWN: '#cc0000',
+  FLOOR_GAME: '#00AEEF',
+  KIOSK: '#008080',
+  BENCH_OFFICE: '#6A0DAD',
+  MISCELLANEOUS: '#666666',
+}
+
+const SECTION_HEADER_LABELS: Record<TaskSection, string> = {
+  PRE_EXISTING_DOWN: 'PRE-EXISTING DOWN GAMES',
+  FLOOR_GAME: 'GAMES WORKED ON THIS SHIFT',
+  KIOSK: 'KIOSKS',
+  BENCH_OFFICE: 'BENCH / OFFICE WORK',
+  MISCELLANEOUS: 'MISCELLANEOUS',
+}
 
 function escape(text: string): string {
   return String(text)
@@ -49,7 +68,6 @@ function buildStyles(): string {
     .content { padding: 0 40px 40px; }
     .section-header { padding: 6px 8px; font-size: 11pt; font-weight: bold; color: #fff; margin-top: 16px; }
     .blue { background: ${REPORT_COLORS.blue}; }
-    .red { background: ${REPORT_COLORS.red}; }
     table { width: 100%; border-collapse: collapse; }
     th { background: #dedede; font-size: 9pt; font-weight: bold; padding: 5px 4px; text-align: left; }
     td { font-size: 9pt; padding: 5px 4px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
@@ -89,25 +107,42 @@ function buildStaffSection(data: ShiftExportData): string {
     </table>`
 }
 
-function buildMachinesSection(data: ShiftExportData): string {
-  const oos = data.tasks.filter((t) => t.status !== 'RESOLVED')
-  const rows = oos.length === 0
-    ? `<tr><td colspan="2" style="color:#666">All clear — no machines out of service</td></tr>`
-    : oos.map((task, i) => {
-        const machine = escape(`${task.location} #${task.machineNumber}`)
-        const desc = escape(`${ISSUE_TYPE_LABELS[task.issueType]}: ${task.actionTaken}`)
-        const bg = i % 2 === 1 ? 'background:#f3f3f3;' : ''
-        return `<tr><td style="width:28.2%;${bg}">${machine}</td><td style="${bg}">${desc}</td></tr>`
-      }).join('')
+function buildSectionTable(
+  tasks: ShiftExportData['tasks'],
+  section: TaskSection
+): string {
+  const sectionTasks = tasks.filter((t) => t.section === section)
+  if (sectionTasks.length === 0) return ''
+
+  const color = SECTION_HEADER_COLORS[section]
+  const label = SECTION_HEADER_LABELS[section]
+
+  const rows = sectionTasks.map((task, i) => {
+    const machine = escape(`${task.location} #${task.machineNumber}`)
+    const desc = escape(`${ISSUE_TYPE_LABELS[task.issueType]}: ${task.actionTaken}`)
+    const status = escape(task.status.replace(/_/g, ' '))
+    const bg = i % 2 === 1 ? 'background:#f3f3f3;' : ''
+    return `<tr>
+      <td style="width:22%;${bg}">${machine}</td>
+      <td style="${bg}">${desc}</td>
+      <td style="width:14%;${bg}">${status}</td>
+    </tr>`
+  }).join('')
+
   return `
-    <div class="section-header red">MACHINES OUT OF SERVICE</div>
+    <div class="section-header" style="background:${color};">${label}</div>
     <table>
       <thead><tr>
-        <th style="width:28.2%">MACHINE</th>
+        <th style="width:22%">MACHINE</th>
         <th>DESCRIPTION</th>
+        <th style="width:14%">STATUS</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`
+}
+
+function buildTaskSections(data: ShiftExportData): string {
+  return TASK_SECTION_ORDER.map((section) => buildSectionTable(data.tasks, section)).join('')
 }
 
 function buildNotesSection(data: ShiftExportData): string {
@@ -121,6 +156,7 @@ function buildNotesSection(data: ShiftExportData): string {
 
 /**
  * Generates a printable HTML page for the River Rock Casino Slot Technical Shift Report.
+ * Tasks are grouped by section (Pre-Existing Down, Floor Games, Kiosks, Bench/Office, Misc).
  * The page auto-triggers window.print() on load so the user can save as PDF natively.
  */
 export function generateShiftReportHTML(data: ShiftExportData): string {
@@ -137,7 +173,7 @@ export function generateShiftReportHTML(data: ShiftExportData): string {
   ${buildInfoBar(data)}
   <div class="content">
     ${buildStaffSection(data)}
-    ${buildMachinesSection(data)}
+    ${buildTaskSections(data)}
     ${buildNotesSection(data)}
   </div>
   <script>window.addEventListener('load', () => window.print())</script>

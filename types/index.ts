@@ -1,6 +1,6 @@
-import type { UserRole, ShiftStatus, IssueType, TaskStatus, MachineStatus, PartsOrderStatus } from '@prisma/client'
+import type { UserRole, ShiftStatus, IssueType, TaskStatus, MachineStatus, PartsOrderStatus, TaskSection } from '@prisma/client'
 
-export type { UserRole, ShiftStatus, IssueType, TaskStatus, MachineStatus, PartsOrderStatus }
+export type { UserRole, ShiftStatus, IssueType, TaskStatus, MachineStatus, PartsOrderStatus, TaskSection }
 
 export interface AuthUser {
   id: string
@@ -28,6 +28,7 @@ export interface TaskSummary {
   issueType: IssueType
   actionTaken: string
   status: TaskStatus
+  section: TaskSection
   createdAt: Date
 }
 
@@ -59,6 +60,7 @@ export interface CreateTaskInput {
   issueType: IssueType
   actionTaken: string
   status: TaskStatus
+  section: TaskSection
 }
 
 export interface CreateMachineInput {
@@ -106,6 +108,7 @@ export interface ShiftExportData {
     issueType: IssueType
     actionTaken: string
     status: TaskStatus
+    section: TaskSection
   }>
   aiSummary: string | null
 }
