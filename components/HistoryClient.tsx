@@ -57,6 +57,11 @@ export default function HistoryClient({ initialReports }: HistoryClientProps) {
           <div className="flex items-center justify-between mb-3">
             <div>
               <span className="font-semibold text-casino-text">{report.shift.tech.name}</span>
+              {report.shift.autoEnded && (
+                <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded bg-amber-900/40 text-amber-400 border border-amber-700">
+                  Auto-ended
+                </span>
+              )}
               <span className="text-casino-muted text-xs ml-3">{formatDate(report.shift.startTime)}</span>
               {report.shift.endTime && (
                 <span className="text-casino-muted text-xs ml-1">→ {formatDate(report.shift.endTime)}</span>

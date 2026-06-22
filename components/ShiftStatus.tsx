@@ -45,6 +45,11 @@ export default function ShiftStatus({ shift, onStart, onEnd, isStarting, isEndin
         <span className="text-green-400 text-sm font-medium">Shift Active</span>
       </div>
       <p className="text-casino-text font-semibold">Started {formatDate(shift.startTime)}</p>
+      {shift.techs.length > 0 && (
+        <p className="text-casino-muted text-sm mt-0.5">
+          On Shift: {shift.techs.map((t) => t.user.name).join(', ')}
+        </p>
+      )}
       <p className="text-casino-muted text-sm mt-1">
         Elapsed: {elapsedTime(shift.startTime)} · {shift.tasks.length} task{shift.tasks.length !== 1 ? 's' : ''} logged
       </p>

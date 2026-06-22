@@ -63,7 +63,8 @@ model User {
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
 
-  shifts Shift[]
+  shifts     Shift[]
+  shiftTechs ShiftTech[]
 }
 
 model Shift {
@@ -72,11 +73,24 @@ model Shift {
   startTime DateTime    @default(now())
   endTime   DateTime?
   status    ShiftStatus @default(ACTIVE)
+  autoEnded Boolean     @default(false)
   createdAt DateTime    @default(now())
 
   tech   User          @relation(fields: [techId], references: [id])
+  techs  ShiftTech[]
   tasks  Task[]
   report ShiftReport?
+}
+
+model ShiftTech {
+  id      String @id @default(cuid())
+  shiftId String
+  userId  String
+
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([shiftId, userId])
 }
 
 model Task {

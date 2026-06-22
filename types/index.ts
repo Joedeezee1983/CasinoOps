@@ -9,14 +9,22 @@ export interface AuthUser {
   role: UserRole
 }
 
+export interface TechOnShift {
+  id: string
+  userId: string
+  user: { id: string; name: string }
+}
+
 export interface ShiftWithTasks {
   id: string
   techId: string
   startTime: Date
   endTime: Date | null
   status: ShiftStatus
+  autoEnded: boolean
   createdAt: Date
   tech: { id: string; name: string; email: string; role: UserRole }
+  techs: TechOnShift[]
   tasks: TaskSummary[]
 }
 
@@ -50,6 +58,7 @@ export interface ShiftReportSummary {
   shift: {
     startTime: Date
     endTime: Date | null
+    autoEnded: boolean
     tech: { name: string }
   }
 }
@@ -97,11 +106,18 @@ export interface CreateUserInput {
   role: UserRole
 }
 
+export interface ActiveUser {
+  id: string
+  name: string
+  role: UserRole
+}
+
 export interface ShiftExportData {
   id: string
   startTime: Date
   endTime: Date | null
-  techName: string
+  autoEnded: boolean
+  techNames: string[]
   tasks: Array<{
     machineNumber: string
     location: string

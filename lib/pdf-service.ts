@@ -89,6 +89,16 @@ function buildInfoBar(data: ShiftExportData): string {
 function buildStaffSection(data: ShiftExportData): string {
   const timeIn = formatReportTime(data.startTime)
   const timeOut = data.endTime ? formatReportTime(data.endTime) : 'ACTIVE'
+  const rows = data.techNames
+    .map(
+      (name) => `<tr>
+        <td>${escape(name)}</td>
+        <td>${escape(timeIn)}</td>
+        <td>${escape(timeOut)}</td>
+        <td>SLOT TECH</td>
+      </tr>`
+    )
+    .join('')
   return `
     <div class="section-header blue">STAFF ON SHIFT</div>
     <table>
@@ -98,12 +108,7 @@ function buildStaffSection(data: ShiftExportData): string {
         <th style="width:16.9%">TIME OUT</th>
         <th style="width:29.5%">ASSIGNMENT</th>
       </tr></thead>
-      <tbody><tr>
-        <td>${escape(data.techName)}</td>
-        <td>${escape(timeIn)}</td>
-        <td>${escape(timeOut)}</td>
-        <td>SLOT TECH</td>
-      </tr></tbody>
+      <tbody>${rows}</tbody>
     </table>`
 }
 
@@ -146,11 +151,15 @@ function buildTaskSections(data: ShiftExportData): string {
 }
 
 function buildNotesSection(data: ShiftExportData): string {
+  const autoEndBanner = data.autoEnded
+    ? `<div style="background:#7c2d12;color:#fef3c7;padding:6px 10px;font-size:9pt;font-weight:bold;margin-bottom:8px;">&#9888; Shift auto-ended after 10 hours.</div>`
+    : ''
   const content = data.aiSummary
     ? escape(stripMarkdown(data.aiSummary))
     : 'No shift summary available.'
   return `
     <div class="section-header blue">NOTES / SHIFT SUMMARY</div>
+    ${autoEndBanner}
     <div class="notes">${content}</div>`
 }
 

@@ -19,6 +19,7 @@ export async function getMostRecentReport(): Promise<ShiftReportSummary | null> 
         select: {
           startTime: true,
           endTime: true,
+          autoEnded: true,
           tech: { select: { name: true } },
         },
       },
@@ -44,6 +45,7 @@ export async function getRecentReports(): Promise<ShiftReportSummary[]> {
         select: {
           startTime: true,
           endTime: true,
+          autoEnded: true,
           tech: { select: { name: true } },
         },
       },
@@ -83,6 +85,7 @@ export async function getShiftHistory(page: number, pageSize: number): Promise<S
         select: {
           startTime: true,
           endTime: true,
+          autoEnded: true,
           tech: { select: { name: true } },
         },
       },

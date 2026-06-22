@@ -21,7 +21,7 @@ export default async function SupervisorPage() {
         <div className="mb-6">
           <MachinesDown />
         </div>
-        <SupervisorView initialShifts={activeShifts} />
+        <SupervisorView initialShifts={activeShifts} userRole={session.user.role} />
       </main>
     </div>
   )

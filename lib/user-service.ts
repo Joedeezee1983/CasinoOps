@@ -1,6 +1,6 @@
 import { db } from '@/lib/db'
 import type { UserRole } from '@prisma/client'
-import type { UserSummary } from '@/types'
+import type { UserSummary, ActiveUser } from '@/types'
 import bcrypt from 'bcryptjs'
 
 const USER_SELECT = {
@@ -13,6 +13,17 @@ const USER_SELECT = {
 } as const
 
 const BCRYPT_SALT_ROUNDS = 12
+
+/**
+ * Returns all active users ordered by name, for use in shift tech selection.
+ */
+export async function getActiveUsers(): Promise<ActiveUser[]> {
+  return db.user.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, role: true },
+    orderBy: { name: 'asc' },
+  })
+}
 
 /**
  * Returns all users ordered by creation date descending.

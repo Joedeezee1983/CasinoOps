@@ -34,7 +34,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const shift = await startShift(session.user.id)
+    const body: unknown = await req.json().catch(() => ({}))
+    const rawTechIds =
+      body !== null && typeof body === 'object' && 'techIds' in body && Array.isArray((body as { techIds: unknown }).techIds)
+        ? (body as { techIds: unknown[] }).techIds
+        : []
+    const techIds = rawTechIds.filter((id): id is string => typeof id === 'string')
+    if (!techIds.includes(session.user.id)) {
+      techIds.unshift(session.user.id)
+    }
+
+    const shift = await startShift(session.user.id, techIds)
     return NextResponse.json({ data: shift }, { status: 201 })
   } catch (error) {
     if (error instanceof Error && error.message.includes('already have an active shift')) {

@@ -53,4 +53,9 @@ export const TASK_SECTION_ORDER: TaskSection[] = [
 export const MAX_BRIEFING_CONTEXT_CHARS = 40000
 export const CLAUDE_MODEL = 'claude-sonnet-4-6'
 export const CLAUDE_MAX_TOKENS = 1024
-export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8
+export const SESSION_MAX_AGE_SECONDS = 10 * 60 * 60
+
+export const SHIFT_TIMEOUT_HOURS = 10
+export const SHIFT_TIMEOUT_MS = SHIFT_TIMEOUT_HOURS * 60 * 60 * 1000
+export const SHIFT_WARNING_AT_MS = SHIFT_TIMEOUT_MS - 15 * 60 * 1000
+export const SHIFT_TIMEOUT_CHECK_INTERVAL_MS = 5 * 60 * 1000

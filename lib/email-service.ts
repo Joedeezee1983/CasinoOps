@@ -30,9 +30,12 @@ export async function sendShiftSummaryEmail(
     month: 'long',
     day: 'numeric',
   })
-  const subject = `CasinoOps Shift Report — ${shift.tech.name} — ${shiftDate}`
+  const techNames = shift.techs.length > 0
+    ? shift.techs.map((t) => t.user.name).join(', ')
+    : shift.tech.name
+  const subject = `CasinoOps Shift Report — ${techNames} — ${shiftDate}`
   const summaryHtml = markdownToHtml(aiSummary)
-  const html = buildEmailHtml(shift.tech.name, shiftDate, summaryHtml, shift.tasks.length)
+  const html = buildEmailHtml(techNames, shiftDate, summaryHtml, shift.tasks.length)
 
   try {
     const resend = new Resend(apiKey)
